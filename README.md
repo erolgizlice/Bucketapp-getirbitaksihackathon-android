@@ -1,6 +1,6 @@
 ![alt text][logo]
 
-[logo]: https://github.com/olciniz/bucketapp-getirbitaksihackathon/blob/master/bucket-logo.png "Logo Title Text 2"
+[logo]: https://github.com/erolgizlice/Bucketapp-getirbitaksihackathon-android/blob/master/bucket-logo.png "Logo Title Text 2"
 # Bucket
 -----
 Bucket is a mobile-ready, user-oriented event organizer app built for both IOS, Android and Web.
