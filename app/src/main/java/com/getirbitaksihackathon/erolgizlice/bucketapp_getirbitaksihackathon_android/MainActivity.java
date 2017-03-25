@@ -44,6 +44,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,7 +57,6 @@ public class MainActivity extends AppCompatActivity
     private ListView lvItems;
 
     String json = "";
-    JSONObject jsonObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +70,7 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         } else {
-            final String[] postData = {""};
-            new GraphRequest(
+            /*new GraphRequest(
                     AccessToken.getCurrentAccessToken(),
                     "/" + Profile.getCurrentProfile().getId() + "/events?limit=5000",
                     null,
@@ -80,7 +79,6 @@ public class MainActivity extends AppCompatActivity
                         public void onCompleted(GraphResponse response) {
 
                             try {
-                                jsonObject = response.getJSONObject();
                                 JSONArray mainObjectArray = response.getJSONObject().getJSONArray("data");
 
                                 for (int i = 0; i < 1; i++) {
@@ -96,26 +94,23 @@ public class MainActivity extends AppCompatActivity
 
                                     json += mainObjectArray.get(i).toString();
                                 }
-
-                                //JSONObject dataObject = mainObject.getJSONObject("data");
-
-                                AsyncT asyncT = new AsyncT();
-                                asyncT.execute();
-
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
 
-                                /*int maxLogSize = 1000;
+                                int maxLogSize = 1000;
                                 for(int i = 0; i <= response.toString().length() / maxLogSize; i++) {
                                     int start = i * maxLogSize;
                                     int end = (i+1) * maxLogSize;
                                     end = end > response.toString().length() ? response.toString().length() : end;
                                     Log.v("asas", response.toString().substring(start, end));
-                                }*/
+                                }
                         }
                     }
-            ).executeAsync();
+            ).executeAsync();*/
+
+            AsyncTaskGetEvents asyncT = new AsyncTaskGetEvents();
+            //asyncT.execute();
 
             new GraphRequest(
                     AccessToken.getCurrentAccessToken(),
@@ -127,7 +122,7 @@ public class MainActivity extends AppCompatActivity
                             try {
                                 JSONArray mainObjectArray = response.getJSONObject().getJSONArray("data");
 
-                                Log.d("AttendingCount",mainObjectArray.length()+"");
+                                Log.d("AttendingCount", mainObjectArray.length() + "");
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -135,15 +130,6 @@ public class MainActivity extends AppCompatActivity
                     }
             ).executeAsync();
         }
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -154,13 +140,13 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        lvItems = (ListView) findViewById(R.id.listViewToDoList);
+        /*lvItems = (ListView) findViewById(R.id.listViewToDoList);
         items = new ArrayList<String>();
         itemsAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, items);
         lvItems.setAdapter(itemsAdapter);
         for (int i = 0; i < 20; i++)
-            items.add(i + " Item");
+            items.add(i + " Item");*/
     }
 
     @Override
@@ -223,7 +209,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    class AsyncT extends AsyncTask<Void, Void, Void> {
+    class AsyncTaskGetEvents extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -236,10 +222,10 @@ public class MainActivity extends AppCompatActivity
 
             try {
                 String id = Profile.getCurrentProfile().getId(),
-                firstName = Profile.getCurrentProfile().getFirstName(),
-                lastName = Profile.getCurrentProfile().getLastName();
+                        firstName = Profile.getCurrentProfile().getFirstName(),
+                        lastName = Profile.getCurrentProfile().getLastName();
                 Uri linkUri = Profile.getCurrentProfile().getLinkUri(),
-                profilePicUri = Profile.getCurrentProfile().getProfilePictureUri(25,25);
+                        profilePicUri = Profile.getCurrentProfile().getProfilePictureUri(25, 25);
 
                 //"{ \"facebook_user_id\":\""+id+"\",\"events\":" +
                 //message = "{ \"facebook_user_id\":\""+id+"\",\"events\":" +jsonObject.get("data").toString()+" }";
@@ -251,23 +237,20 @@ public class MainActivity extends AppCompatActivity
                 HttpResponse resp = hc.execute(p);
                 if (resp != null) {
                     if (resp.getStatusLine().getStatusCode() == 204)
-                        Log.d("serverPost", "TRUE");
+                        Log.d("serverPost", "204");
                 }
 
                 Log.d("Status line", "" + resp.getStatusLine().getStatusCode());
-                Log.d("asas", p.toString());
+                Log.d("serverResponse", EntityUtils.toString(resp.getEntity()));
             } catch (Exception e) {
                 e.printStackTrace();
-
             }
-
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-
             Log.d("serverPost", "onPostExecute");
         }
     }
