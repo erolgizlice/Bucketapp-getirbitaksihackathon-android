@@ -45,22 +45,6 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d("asdad", Profile.getCurrentProfile().getId());
-                new GraphRequest(
-                        AccessToken.getCurrentAccessToken(),
-                        "/"+Profile.getCurrentProfile().getId()+"/events",
-                        null,
-                        HttpMethod.GET,
-                        new GraphRequest.Callback() {
-                            public void onCompleted(GraphResponse response) {
-                                /* handle the result */
-                                try {
-                                    Log.d("asdad",response.getJSONObject().getString("data"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                ).executeAsync();
 
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
