@@ -12,28 +12,32 @@
         android:id="@+id/imageLogo"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:layout_gravity="center"
         android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
         android:src="@drawable/logo_bucket" />
 
     <ListView
         android:id="@+id/listViewToDoList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="50dp"
-        android:layout_marginLeft="50dp"
-        android:layout_below="@+id/imageLogo"
-        android:layout_above="@+id/buttonAddToBucket"/>
-    <Button
-        android:id="@+id/buttonAddToBucket"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonShowOnMap"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        android:layout_marginRight="50dp"
-        android:layout_alignParentBottom="true"
+        android:layout_alignParentBottom="true"/>
+
+    <Button
+        android:id="@+id/buttonShowOnMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageLogo"
         android:layout_centerHorizontal="true"
-        android:text="Add to Bucket" />
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#F9F9F9"
+        android:text="@string/button_show_on_map" />
 
 </RelativeLayout>

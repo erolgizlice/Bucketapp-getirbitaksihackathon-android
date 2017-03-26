@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(LoginResult loginResult) {
                 new GraphRequest(
                         AccessToken.getCurrentAccessToken(),
-                        "/" + Profile.getCurrentProfile().getId() + "/events?limit=5000",
+                        "/me/events?limit=5000",
                         null,
                         HttpMethod.GET,
                         new GraphRequest.Callback() {
@@ -77,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
 
                                 AsyncTaskAddEvents asyncT = new AsyncTaskAddEvents();
-                                //asyncT.execute();
+                                asyncT.execute();
                             }
                         }
                 ).executeAsync();
@@ -102,14 +102,14 @@ public class LoginActivity extends AppCompatActivity {
 
                                     new GraphRequest(
                                             AccessToken.getCurrentAccessToken(),
-                                            "/" + locationID + "?fields=placeLocation",
+                                            "/" + locationID + "?fields=location",
                                             null,
                                             HttpMethod.GET,
                                             new GraphRequest.Callback() {
                                                 public void onCompleted(GraphResponse response) {
                                                     try {
                                                         Log.d("LOCATION", response.getJSONObject().toString());
-                                                        JSONObject locationObject = response.getJSONObject().getJSONObject("placeLocation");
+                                                        JSONObject locationObject = response.getJSONObject().getJSONObject("location");
                                                         String city = locationObject.getString("city");
                                                         String country = locationObject.getString("country");
                                                         String lat = locationObject.getString("latitude");
@@ -128,8 +128,6 @@ public class LoginActivity extends AppCompatActivity {
                                             }
                                     ).executeAsync();
 
-                                    //String events = response.getJSONObject().getString("events");
-
                                     Profile profile = Profile.getCurrentProfile();
                                     String id = profile.getId();
                                     String name = profile.getName();
@@ -147,8 +145,6 @@ public class LoginActivity extends AppCompatActivity {
                                     Log.i("Login" + "Bday", bday);
                                     Log.i("Login" + "Age", age);
                                     Log.i("Login" + "LocationID", locationID);
-                                    //Log.i("Login" + "placeLocation", placeLocation.toString());
-                                    //Log.i("Login" + "events", events);
 
                                     u = new User(id, name, link, gender, age, profilePicLink, email, locationID, placeLocation);
 
@@ -158,12 +154,9 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,email,first_name,last_name,gender, birthday, placeLocation, hometown");
+                parameters.putString("fields", "id,email,first_name,last_name,gender, birthday, location, hometown");
                 request.setParameters(parameters);
                 request.executeAsync();
-
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(intent);
             }
 
             @Override
@@ -200,6 +193,9 @@ public class LoginActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
+
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 
     class AsyncTaskAddEvents extends AsyncTask<Void, Void, Void> {
@@ -214,14 +210,11 @@ public class LoginActivity extends AppCompatActivity {
             JSONObject object = new JSONObject();
 
             try {
-                String id = Profile.getCurrentProfile().getId(),
-                        name = Profile.getCurrentProfile().getName();
-                Uri linkUri = Profile.getCurrentProfile().getLinkUri();
+                String id = Profile.getCurrentProfile().getId();
 
-                //"{ \"facebook_user_id\":\""+id+"\",\"events\":" +
                 message = "{ \"facebook_user_id\":\"" + id + "\",\"events\":" + eventJSONObject.get("data").toString() + " }";
-                //message = "{ \"key\":\"Z7gOVEuESS\"}";
 
+                Log.d("EVEEEEENT",eventJSONObject.get("data").toString());
                 p.setEntity(new StringEntity(message, "UTF8"));
                 p.setHeader("Content-type", "application/json");
                 HttpResponse resp = hc.execute(p);
@@ -253,11 +246,9 @@ public class LoginActivity extends AppCompatActivity {
             String message;
 
             HttpPost p = new HttpPost("https://bucketapp-getirbitaksi.herokuapp.com/addUser");
-            JSONObject object = new JSONObject();
 
             try {
                 message = u.toString() + " \"events\": " + userEventIDs + "}";
-                //message = "{ \"key\":\"Z7gOVEuESS\"}";
 
                 Log.d("USER", message);
                 p.setEntity(new StringEntity(message, "UTF8"));

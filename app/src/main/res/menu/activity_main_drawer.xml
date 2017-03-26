@@ -5,31 +5,31 @@
         <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Profile" />
+            android:title="@string/menu_map" />
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Settings" />
+            android:title="@string/menu_settings" />
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Privacy" />
+            android:title="@string/menu_privacy" />
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="Friends" />
+            android:title="@string/menu_friends" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/menu_communicate">
         <menu>
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:title="@string/menu_share" />
             <item
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Log out" />
+                android:title="@string/menu_log_out" />
         </menu>
     </item>
 

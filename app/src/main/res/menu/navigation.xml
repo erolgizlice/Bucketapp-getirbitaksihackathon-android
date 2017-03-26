@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_notOK"
+        android:icon="@drawable/com_facebook_tooltip_black_xout"
+        android:title="@string/navigation_not_ok" />
+
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:title="@string/title_dashboard" />
+
+    <item
+        android:id="@+id/navigation_OK"
+        android:icon="@drawable/com_facebook_button_like_icon_selected"
+        android:title="@string/navigation_ok" />
+
+</menu>

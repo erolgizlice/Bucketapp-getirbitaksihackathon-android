@@ -51,7 +51,7 @@ public class PlaceLocation {
 
     @Override
     public String toString() {
-        return "\"placeLocation\": {" +
+        return "\"location\": {" +
                 "\"city\":\"" + city + "\"" +
                 ", \"country\":\"" + country + "\"" +
                 ", \"latitude\":\"" + latitude + "\"" +

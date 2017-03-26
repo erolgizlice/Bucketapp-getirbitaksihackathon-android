@@ -1,13 +1,14 @@
 package com.getirbitaksihackathon.erolgizlice.bucketapp_getirbitaksihackathon_android;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -15,7 +16,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
@@ -23,26 +23,28 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class EventActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
 
-    RelativeLayout rl;
     TextView eventNameTV, eventDateTV;
-    ArrayList<Event> eventArrayList = new ArrayList<Event>();
+    Event event;
+    Button buttonGoWithSomeone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_event);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        rl = (RelativeLayout) findViewById(R.id.eventView);
-        eventNameTV = (TextView) findViewById(R.id.eventNameMap);
-        eventDateTV = (TextView) findViewById(R.id.eventTimeMap);
+        eventNameTV = (TextView) findViewById(R.id.eventNamePage);
+        eventDateTV = (TextView) findViewById(R.id.eventTimePage);
+        buttonGoWithSomeone = (Button) findViewById(R.id.buttonGoWithSomeone);
+
+        String tag = getIntent().getStringExtra("eventClassTag");
 
         String json = PreferenceManager.getDefaultSharedPreferences(this).getString("JSON", "");
         if (!json.isEmpty()) {
@@ -86,12 +88,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Place place = new Place(placeName, facebook_place_id, pl);
                     Event e = new Event(description, name, start_time, facebook_event_id, place);
 
-                    eventArrayList.add(e);
+                    if (facebook_event_id.equals(tag))
+                        this.event = e;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
+        buttonGoWithSomeone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(EventActivity.this, MatchActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 
@@ -119,42 +130,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.078607, 29.022397), 12.0f));
 
-        for (int i = 0; i < eventArrayList.size(); i++) {
-            double latitude = Double.parseDouble(eventArrayList.get(i).place.placeLocation.getLatitude());
-            double longitude = Double.parseDouble(eventArrayList.get(i).place.placeLocation.getLongitude());
-            LatLng pos = new LatLng(longitude, latitude);
+        double latitude = Double.parseDouble(event.getPlace().getPlaceLocation().getLatitude());
+        double longitude = Double.parseDouble(event.getPlace().getPlaceLocation().getLongitude());
+        LatLng pos = new LatLng(longitude, latitude);
 
-            mMap.addMarker(new MarkerOptions().position(pos).title(eventArrayList.get(i).name));
-        }
+        mMap.addMarker(new MarkerOptions().position(pos).title(event.name));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 12.0f));
 
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                eventDateTV.setText("");
-                eventNameTV.setText("");
-                rl.setVisibility(View.VISIBLE);
-
-                for (int i = 0; i < eventArrayList.size(); i++) {
-                    String eventName = eventArrayList.get(i).getName();
-                    if (marker.getTitle().equals(eventName)) {
-                        String date = eventArrayList.get(i).start_time;
-                        eventNameTV.setText(eventName);
-                        eventDateTV.setText(date);
-                    }
-                }
-                return true;
-            }
-        });
-
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                rl.setVisibility(View.GONE);
-                eventDateTV.setText("");
-                eventNameTV.setText("");
-            }
-        });
+        eventNameTV.setText(event.getName());
+        eventDateTV.setText(event.getStart_time());
     }
 }

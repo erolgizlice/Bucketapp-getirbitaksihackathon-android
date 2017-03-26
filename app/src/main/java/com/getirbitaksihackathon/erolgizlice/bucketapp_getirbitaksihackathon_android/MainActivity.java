@@ -3,7 +3,6 @@ package com.getirbitaksihackathon.erolgizlice.bucketapp_getirbitaksihackathon_an
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.*;
 import android.location.Location;
@@ -20,17 +19,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -41,7 +38,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
@@ -51,7 +47,7 @@ public class MainActivity extends AppCompatActivity
     private ListViewAdapter eventListAdapter;
     private ListView listView;
 
-    String json = "";
+    private Button buttonShowMap;
 
     LatLng myLocation;
 
@@ -83,6 +79,15 @@ public class MainActivity extends AppCompatActivity
                     10, this);
             //myLocation = new LatLng(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude(),locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
             myLocation = new LatLng(41.078607, 29.022397);
+
+            AsyncTaskGetEvents asyncT = new AsyncTaskGetEvents();
+            asyncT.execute();
+
+            listView = (ListView) findViewById(R.id.listViewToDoList);
+            buttonShowMap = (Button) findViewById(R.id.buttonShowOnMap);
+
+            eventListAdapter = new ListViewAdapter(this, eventList);
+            listView.setAdapter(eventListAdapter);
 
             /*new GraphRequest(
                     AccessToken.getCurrentAccessToken(),
@@ -123,41 +128,37 @@ public class MainActivity extends AppCompatActivity
                     }
             ).executeAsync();*/
 
-            AsyncTaskGetEvents asyncT = new AsyncTaskGetEvents();
-            asyncT.execute();
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                    this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();
 
-            new GraphRequest(
-                    AccessToken.getCurrentAccessToken(),
-                    "/1536745433010103/attending?limit=5000",
-                    null,
-                    HttpMethod.GET,
-                    new GraphRequest.Callback() {
-                        public void onCompleted(GraphResponse response) {
-                            try {
-                                JSONArray mainObjectArray = response.getJSONObject().getJSONArray("data");
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            navigationView.setNavigationItemSelectedListener(this);
 
-                                Log.d("AttendingCount", mainObjectArray.length() + "");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-            ).executeAsync();
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Toast.makeText(MainActivity.this, view.getTag() + "",
+                            Toast.LENGTH_SHORT).show();
+
+                    Intent intent = new Intent(MainActivity.this, EventActivity.class);
+                    intent.putExtra("eventClassTag", view.getTag() + "");
+                    intent.putExtra("eventLatitude", view.getTag() + "");
+                    startActivity(intent);
+                }
+            });
+
+            buttonShowMap.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MainActivity.this, MapsActivity.class);
+                    startActivity(intent);
+                }
+            });
         }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        listView = (ListView) findViewById(R.id.listViewToDoList);
-
-        eventListAdapter = new ListViewAdapter(MainActivity.this, eventList);
-        listView.setAdapter(eventListAdapter);
     }
 
     @Override
@@ -240,10 +241,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public ArrayList<Event> getEventList() {
-        return this.eventList;
-    }
-
     class AsyncTaskGetEvents extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -255,8 +252,6 @@ public class MainActivity extends AppCompatActivity
             HttpPost p = new HttpPost("https://bucketapp-getirbitaksi.herokuapp.com/getEvent");
 
             try {
-                //"{ \"facebook_user_id\":\""+id+"\",\"events\":" +
-                //message = "{ \"facebook_user_id\":\""+id+"\",\"events\":" +jsonObject.get("data").toString()+" }";
                 message = "{ \"latitude\": \"" + myLocation.latitude + "\", " +
                         "\"longitude\": \"" + myLocation.longitude + "\" }";
 
@@ -270,10 +265,10 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 Log.d("Status line", "" + resp.getStatusLine().getStatusCode());
-                //Log.d("serverResponse", EntityUtils.toString(resp.getEntity()));
 
                 String json = EntityUtils.toString(resp.getEntity());
 
+//                Log.d("EVENTS", json);
                 PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putString("JSON", json).apply();
 
                 JSONArray jsonArray = new JSONArray(json);
@@ -282,30 +277,41 @@ public class MainActivity extends AppCompatActivity
                     String facebook_event_id = object.getString("facebook_event_id");
                     String name = object.getString("name");
                     String start_time = object.getString("start_time");
-                    String description = object.getString("description");
+                    String description = object.has("description") ? object.getString("description") : "";
 
                     JSONArray usersArray = object.getJSONArray("users");
                     for (int j = 0; j < usersArray.length(); j++) {
                         String user = usersArray.getString(j);
                     }
 
-                    JSONObject placeObject = object.getJSONObject("place");
-                    String facebook_place_id = placeObject.getString("facebook_place_id");
-                    String placeName = placeObject.getString("name");
+                    JSONObject placeObject = object.getJSONObject("place");;
+                    String facebook_place_id = "";
+                    String placeName = "";
 
                     JSONObject locationObject = placeObject.getJSONObject("location");
-                    String city = locationObject.getString("city");
-                    String country = locationObject.getString("country");
+                    String city = "";
+                    if (object.has("city"))
+                        city = object.getString("city");
+
+                    String country = "";
+                    if (object.has("country"))
+                        country = object.getString("country");
+
+                    if (placeObject.has("name")) {
+                        facebook_place_id = placeObject.getString("facebook_place_id");
+                        placeName = placeObject.getString("name");
+                    }
+
 
                     JSONArray locArray = locationObject.getJSONArray("loc");
                     String latitude = locArray.get(0).toString();
                     String longitude = locArray.get(1).toString();
-
                     PlaceLocation pl = new PlaceLocation(city, country, latitude, longitude);
                     Place place = new Place(placeName, facebook_place_id, pl);
                     Event e = new Event(description, name, start_time, facebook_event_id, place);
 
                     eventList.add(e);
+                    Log.d("EVENT",e.toString());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -319,6 +325,14 @@ public class MainActivity extends AppCompatActivity
             Log.d("serverPost", "onPostExecute");
             Toast.makeText(MainActivity.this, "events are pulled.",
                     Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
         }
     }
 }
