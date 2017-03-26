@@ -5,13 +5,13 @@ package com.getirbitaksihackathon.erolgizlice.bucketapp_getirbitaksihackathon_an
  */
 
 public class Place {
-    String name, id;
-    Location location;
+    String name, facebook_place_id;
+    PlaceLocation placeLocation;
 
-    public Place(String name, String id, Location location) {
+    public Place(String name, String facebook_place_id, PlaceLocation placeLocation) {
         this.name = name;
-        this.id = id;
-        this.location = location;
+        this.facebook_place_id = facebook_place_id;
+        this.placeLocation = placeLocation;
     }
 
     public String getName() {
@@ -23,27 +23,27 @@ public class Place {
     }
 
     public String getId() {
-        return id;
+        return facebook_place_id;
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.facebook_place_id = id;
     }
 
-    public Location getLocation() {
-        return location;
+    public PlaceLocation getPlaceLocation() {
+        return placeLocation;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setPlaceLocation(PlaceLocation placeLocation) {
+        this.placeLocation = placeLocation;
     }
 
     @Override
     public String toString() {
         return "Place{" +
                 "name='" + name + '\'' +
-                ", id='" + id + '\'' +
-                ", location=" + location +
+                ", facebook_place_id='" + facebook_place_id + '\'' +
+                ", placeLocation=" + placeLocation +
                 '}';
     }
 }

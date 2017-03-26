@@ -1,13 +1,17 @@
 package com.getirbitaksihackathon.erolgizlice.bucketapp_getirbitaksihackathon_android;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.*;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,28 +20,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.facebook.AccessToken;
-import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.facebook.Profile;
 import com.facebook.login.LoginManager;
-import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.maps.model.LatLng;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -50,13 +45,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, LocationListener {
 
-    private ArrayList<String> items;
-    private ArrayAdapter<String> itemsAdapter;
-    private ListView lvItems;
+    private ArrayList<Event> eventList = new ArrayList<Event>();
+    private ListViewAdapter eventListAdapter;
+    private ListView listView;
 
     String json = "";
+
+    LatLng myLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +67,23 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         } else {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    3000,   // 3 sec
+                    10, this);
+            //myLocation = new LatLng(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude(),locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
+            myLocation = new LatLng(41.078607, 29.022397);
+
             /*new GraphRequest(
                     AccessToken.getCurrentAccessToken(),
                     "/" + Profile.getCurrentProfile().getId() + "/events?limit=5000",
@@ -110,7 +124,7 @@ public class MainActivity extends AppCompatActivity
             ).executeAsync();*/
 
             AsyncTaskGetEvents asyncT = new AsyncTaskGetEvents();
-            //asyncT.execute();
+            asyncT.execute();
 
             new GraphRequest(
                     AccessToken.getCurrentAccessToken(),
@@ -140,13 +154,10 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        /*lvItems = (ListView) findViewById(R.id.listViewToDoList);
-        items = new ArrayList<String>();
-        itemsAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, items);
-        lvItems.setAdapter(itemsAdapter);
-        for (int i = 0; i < 20; i++)
-            items.add(i + " Item");*/
+        listView = (ListView) findViewById(R.id.listViewToDoList);
+
+        eventListAdapter = new ListViewAdapter(MainActivity.this, eventList);
+        listView.setAdapter(eventListAdapter);
     }
 
     @Override
@@ -209,6 +220,30 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        myLocation = new LatLng(location.getLatitude(), location.getLongitude());
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    public ArrayList<Event> getEventList() {
+        return this.eventList;
+    }
+
     class AsyncTaskGetEvents extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -217,19 +252,13 @@ public class MainActivity extends AppCompatActivity
             HttpClient hc = new DefaultHttpClient();
             String message;
 
-            HttpPost p = new HttpPost("http://192.168.88.162:3000/getEvent");
-            JSONObject object = new JSONObject();
+            HttpPost p = new HttpPost("https://bucketapp-getirbitaksi.herokuapp.com/getEvent");
 
             try {
-                String id = Profile.getCurrentProfile().getId(),
-                        firstName = Profile.getCurrentProfile().getFirstName(),
-                        lastName = Profile.getCurrentProfile().getLastName();
-                Uri linkUri = Profile.getCurrentProfile().getLinkUri(),
-                        profilePicUri = Profile.getCurrentProfile().getProfilePictureUri(25, 25);
-
                 //"{ \"facebook_user_id\":\""+id+"\",\"events\":" +
                 //message = "{ \"facebook_user_id\":\""+id+"\",\"events\":" +jsonObject.get("data").toString()+" }";
-                message = "{ \"key\":\"Z7gOVEuESS\"}";
+                message = "{ \"latitude\": \"" + myLocation.latitude + "\", " +
+                        "\"longitude\": \"" + myLocation.longitude + "\" }";
 
 
                 p.setEntity(new StringEntity(message, "UTF8"));
@@ -241,7 +270,43 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 Log.d("Status line", "" + resp.getStatusLine().getStatusCode());
-                Log.d("serverResponse", EntityUtils.toString(resp.getEntity()));
+                //Log.d("serverResponse", EntityUtils.toString(resp.getEntity()));
+
+                String json = EntityUtils.toString(resp.getEntity());
+
+                PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putString("JSON", json).apply();
+
+                JSONArray jsonArray = new JSONArray(json);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject object = jsonArray.getJSONObject(i);
+                    String facebook_event_id = object.getString("facebook_event_id");
+                    String name = object.getString("name");
+                    String start_time = object.getString("start_time");
+                    String description = object.getString("description");
+
+                    JSONArray usersArray = object.getJSONArray("users");
+                    for (int j = 0; j < usersArray.length(); j++) {
+                        String user = usersArray.getString(j);
+                    }
+
+                    JSONObject placeObject = object.getJSONObject("place");
+                    String facebook_place_id = placeObject.getString("facebook_place_id");
+                    String placeName = placeObject.getString("name");
+
+                    JSONObject locationObject = placeObject.getJSONObject("location");
+                    String city = locationObject.getString("city");
+                    String country = locationObject.getString("country");
+
+                    JSONArray locArray = locationObject.getJSONArray("loc");
+                    String latitude = locArray.get(0).toString();
+                    String longitude = locArray.get(1).toString();
+
+                    PlaceLocation pl = new PlaceLocation(city, country, latitude, longitude);
+                    Place place = new Place(placeName, facebook_place_id, pl);
+                    Event e = new Event(description, name, start_time, facebook_event_id, place);
+
+                    eventList.add(e);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -252,6 +317,8 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             Log.d("serverPost", "onPostExecute");
+            Toast.makeText(MainActivity.this, "events are pulled.",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 }

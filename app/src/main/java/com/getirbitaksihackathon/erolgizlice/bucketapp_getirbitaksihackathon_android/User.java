@@ -14,9 +14,9 @@ public class User {
     String profilePicLink;
     String email;
     String locationID;
-    Location location;
+    PlaceLocation placeLocation;
 
-    public User(String user_id, String name, String link, String gender, String age, String profilePicLink, String email, String locationID, Location location) {
+    public User(String user_id, String name, String link, String gender, String age, String profilePicLink, String email, String locationID, PlaceLocation placeLocation) {
         this.user_id = user_id;
         this.name = name;
         this.link = link;
@@ -25,7 +25,7 @@ public class User {
         this.profilePicLink = profilePicLink;
         this.email = email;
         this.locationID = locationID;
-        this.location = location;
+        this.placeLocation = placeLocation;
     }
 
     public String getUser_id() {
@@ -92,12 +92,12 @@ public class User {
         this.locationID = locationID;
     }
 
-    public Location getLocation() {
-        return location;
+    public PlaceLocation getPlaceLocation() {
+        return placeLocation;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setPlaceLocation(PlaceLocation placeLocation) {
+        this.placeLocation = placeLocation;
     }
 
     @Override
@@ -110,6 +110,6 @@ public class User {
                 ", \"age_range_max\":\"" + age + "\"" +
                 ", \"profile_picture_uri\":\"" + profilePicLink + "\"" +
                 ", \"email\":\"" + email + "\"" +
-                "," + location.toString();
+                "," + placeLocation.toString();
     }
 }

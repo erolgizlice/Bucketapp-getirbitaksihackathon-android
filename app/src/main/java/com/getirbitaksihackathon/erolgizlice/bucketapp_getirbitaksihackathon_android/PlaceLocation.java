@@ -4,13 +4,13 @@ package com.getirbitaksihackathon.erolgizlice.bucketapp_getirbitaksihackathon_an
  * Created by erolg on 26.03.2017.
  */
 
-public class Location {
+public class PlaceLocation {
     String city;
     String country;
     String latitude;
     String longitude;
 
-    public Location(String city, String country, String latitude, String longitude) {
+    public PlaceLocation(String city, String country, String latitude, String longitude) {
         this.city = city;
         this.country = country;
         this.latitude = latitude;
@@ -51,7 +51,7 @@ public class Location {
 
     @Override
     public String toString() {
-        return "\"location\": {" +
+        return "\"placeLocation\": {" +
                 "\"city\":\"" + city + "\"" +
                 ", \"country\":\"" + country + "\"" +
                 ", \"latitude\":\"" + latitude + "\"" +

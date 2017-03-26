@@ -1,14 +1,10 @@
 package com.getirbitaksihackathon.erolgizlice.bucketapp_getirbitaksihackathon_android;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 
 import com.facebook.AccessToken;
@@ -16,7 +12,6 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
-import com.facebook.GraphRequestAsyncTask;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.Profile;
@@ -33,8 +28,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
 public class LoginActivity extends AppCompatActivity {
@@ -45,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     String userGender;
     String userEventIDs = "[";
     User u;
-    Location loc;
+    PlaceLocation loc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,25 +98,25 @@ public class LoginActivity extends AppCompatActivity {
                                     String bday = response.getJSONObject().getString("birthday");
                                     String age = getAge(Integer.parseInt(bday.split("/")[0]), Integer.parseInt(bday.split("/")[1]), Integer.parseInt(bday.split("/")[2]));
                                     String locationID = response.getJSONObject().getJSONObject("location").getString("id");
-                                    Location location = new Location("","","","");
+                                    PlaceLocation placeLocation = new PlaceLocation("","","","");
 
                                     new GraphRequest(
                                             AccessToken.getCurrentAccessToken(),
-                                            "/" + locationID + "?fields=location",
+                                            "/" + locationID + "?fields=placeLocation",
                                             null,
                                             HttpMethod.GET,
                                             new GraphRequest.Callback() {
                                                 public void onCompleted(GraphResponse response) {
                                                     try {
                                                         Log.d("LOCATION", response.getJSONObject().toString());
-                                                        JSONObject locationObject = response.getJSONObject().getJSONObject("location");
+                                                        JSONObject locationObject = response.getJSONObject().getJSONObject("placeLocation");
                                                         String city = locationObject.getString("city");
                                                         String country = locationObject.getString("country");
                                                         String lat = locationObject.getString("latitude");
                                                         String longt = locationObject.getString("longitude");
 
-                                                        loc = new Location(city, country, lat, longt);
-                                                        u.setLocation(loc);
+                                                        loc = new PlaceLocation(city, country, lat, longt);
+                                                        u.setPlaceLocation(loc);
 
                                                         AsyncTaskAddUser asyncT = new AsyncTaskAddUser();
                                                         asyncT.execute();
@@ -154,10 +147,10 @@ public class LoginActivity extends AppCompatActivity {
                                     Log.i("Login" + "Bday", bday);
                                     Log.i("Login" + "Age", age);
                                     Log.i("Login" + "LocationID", locationID);
-                                    //Log.i("Login" + "location", location.toString());
+                                    //Log.i("Login" + "placeLocation", placeLocation.toString());
                                     //Log.i("Login" + "events", events);
 
-                                    u = new User(id, name, link, gender, age, profilePicLink, email, locationID, location);
+                                    u = new User(id, name, link, gender, age, profilePicLink, email, locationID, placeLocation);
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -165,7 +158,7 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,email,first_name,last_name,gender, birthday, location, hometown");
+                parameters.putString("fields", "id,email,first_name,last_name,gender, birthday, placeLocation, hometown");
                 request.setParameters(parameters);
                 request.executeAsync();
 
@@ -217,7 +210,7 @@ public class LoginActivity extends AppCompatActivity {
             HttpClient hc = new DefaultHttpClient();
             String message;
 
-            HttpPost p = new HttpPost("http://192.168.88.162:3000/addEvent");
+            HttpPost p = new HttpPost("https://bucketapp-getirbitaksi.herokuapp.com/addEvent");
             JSONObject object = new JSONObject();
 
             try {
@@ -259,7 +252,7 @@ public class LoginActivity extends AppCompatActivity {
             HttpClient hc = new DefaultHttpClient();
             String message;
 
-            HttpPost p = new HttpPost("http://192.168.88.162:3000/addUser");
+            HttpPost p = new HttpPost("https://bucketapp-getirbitaksi.herokuapp.com/addUser");
             JSONObject object = new JSONObject();
 
             try {

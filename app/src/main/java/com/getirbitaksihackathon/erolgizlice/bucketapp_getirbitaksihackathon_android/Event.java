@@ -5,13 +5,16 @@ package com.getirbitaksihackathon.erolgizlice.bucketapp_getirbitaksihackathon_an
  */
 
 public class Event {
-    String description, name, start_time,id;
+    String description, name, start_time, facebook_event_id;
+    User user;
+    Place place;
 
-    public Event(String description, String name, String start_time, String id) {
+    public Event(String description, String name, String start_time, String facebook_event_id, Place place) {
         this.description = description;
         this.name = name;
         this.start_time = start_time;
-        this.id = id;
+        this.facebook_event_id = facebook_event_id;
+        this.place = place;
     }
 
     public String getDescription() {
@@ -38,12 +41,28 @@ public class Event {
         this.start_time = start_time;
     }
 
-    public String getId() {
-        return id;
+    public String getFacebook_event_id() {
+        return facebook_event_id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setFacebook_event_id(String facebook_event_id) {
+        this.facebook_event_id = facebook_event_id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Place getPlace() {
+        return place;
+    }
+
+    public void setPlace(Place place) {
+        this.place = place;
     }
 
     @Override
@@ -52,7 +71,9 @@ public class Event {
                 "description='" + description + '\'' +
                 ", name='" + name + '\'' +
                 ", start_time='" + start_time + '\'' +
-                ", id='" + id + '\'' +
+                ", facebook_event_id='" + facebook_event_id + '\'' +
+                ", user=" + user +
+                ", place=" + place +
                 '}';
     }
 }
